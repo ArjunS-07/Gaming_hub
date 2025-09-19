@@ -1,11 +1,13 @@
 package com.gaminghub.gaming_hub.services;
 
+import com.gaminghub.gaming_hub.dto.*;
+import com.gaminghub.gaming_hub.mapper.DtoMapper;
 import com.gaminghub.gaming_hub.models.AdminUser;
 import com.gaminghub.gaming_hub.repository.AdminUserRepository;
-import com.gaminghub.gaming_hub.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminUserService {
@@ -16,28 +18,31 @@ public class AdminUserService {
         this.repository = repository;
     }
 
-    public List<AdminUser> getAllAdmins() {
-        return repository.findAll();
+    public List<AdminUserResponseDTO> getAllAdmins() {
+        return repository.findAll()
+                .stream()
+                .map(DtoMapper::toAdminUserResponse)
+                .collect(Collectors.toList());
     }
 
-    public AdminUser getAdminById(String id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+    public AdminUserResponseDTO getAdminById(String id) {
+        AdminUser admin = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        return DtoMapper.toAdminUserResponse(admin);
     }
 
-    public AdminUser createAdmin(AdminUser adminUser) {
-        return repository.save(adminUser);
+    public AdminUserResponseDTO createAdmin(AdminUserRequestDTO request) {
+        AdminUser saved = repository.save(DtoMapper.toAdminUser(request));
+        return DtoMapper.toAdminUserResponse(saved);
     }
 
-    public AdminUser getByUsername(String username) {
-        return repository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with username: " + username));
+    public AdminUserResponseDTO getByUsername(String username) {
+        AdminUser admin = repository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        return DtoMapper.toAdminUserResponse(admin);
     }
 
     public void deleteAdmin(String id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Admin not found with id: " + id);
-        }
         repository.deleteById(id);
     }
 }

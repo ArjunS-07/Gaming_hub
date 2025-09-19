@@ -3,6 +3,7 @@ package com.gaminghub.gaming_hub.models;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+
 @Document(collection = "members")
 public class Member {
 
@@ -12,6 +13,8 @@ public class Member {
     private String name;
     private String phone;
     private double balance;
+    
+    
 
     // Default constructor
     public Member() {}

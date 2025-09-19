@@ -1,45 +1,38 @@
 package com.gaminghub.gaming_hub.services;
 
-import com.gaminghub.gaming_hub.exception.ResourceNotFoundException;
-import com.gaminghub.gaming_hub.models.Member;
+import com.gaminghub.gaming_hub.dto.*;
+import com.gaminghub.gaming_hub.mapper.DtoMapper;
 import com.gaminghub.gaming_hub.models.Recharge;
-import com.gaminghub.gaming_hub.repository.MemberRepository;
 import com.gaminghub.gaming_hub.repository.RechargeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RechargeService {
 
-    @Autowired
-    private RechargeRepository rechargeRepository;
+    private final RechargeRepository repository;
 
-    @Autowired
-    private MemberRepository memberRepository;
-
-    public List<Recharge> getAllRecharges() {
-        return rechargeRepository.findAll();
+    public RechargeService(RechargeRepository repository) {
+        this.repository = repository;
     }
 
-    public Recharge getRechargeById(String id) {
-        return rechargeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Recharge not found with id: " + id));
+    public List<RechargeResponseDTO> getAllRecharges() {
+        return repository.findAll()
+                .stream()
+                .map(DtoMapper::toRechargeResponse)
+                .collect(Collectors.toList());
     }
 
-    public Recharge addRecharge(String memberId, double amount) {
-        // Find member
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + memberId));
+    public RechargeResponseDTO getRechargeById(String id) {
+        Recharge recharge = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Recharge not found"));
+        return DtoMapper.toRechargeResponse(recharge);
+    }
 
-        // Update balance
-        member.setBalance(member.getBalance() + amount);
-        memberRepository.save(member);
-
-        // Create recharge record
-        Recharge recharge = new Recharge(memberId, amount, LocalDateTime.now());
-        return rechargeRepository.save(recharge);
+    public RechargeResponseDTO createRecharge(RechargeRequestDTO request) {
+        Recharge saved = repository.save(DtoMapper.toRecharge(request));
+        return DtoMapper.toRechargeResponse(saved);
     }
 }

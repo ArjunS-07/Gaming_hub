@@ -1,35 +1,39 @@
 package com.gaminghub.gaming_hub.controllers;
 
-import com.gaminghub.gaming_hub.models.Recharge;
+import com.gaminghub.gaming_hub.dto.*;
 import com.gaminghub.gaming_hub.services.RechargeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 
 @RestController
 @RequestMapping("/api/recharges")
 public class RechargeController {
 
-    @Autowired
-    private RechargeService rechargeService;
+    private final RechargeService service;
+    private static final Logger logger = LoggerFactory.getLogger(RechargeController.class);
+
+    public RechargeController(RechargeService service) {
+        this.service = service;
+    }
 
     @GetMapping
-    public List<Recharge> getAllRecharges() {
-        return rechargeService.getAllRecharges();
+    public ResponseEntity<List<RechargeResponseDTO>> getAllRecharges() {
+        return ResponseEntity.ok(service.getAllRecharges());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Recharge> getRechargeById(@PathVariable String id) {
-        return ResponseEntity.ok(rechargeService.getRechargeById(id));
+    public ResponseEntity<RechargeResponseDTO> getRechargeById(@PathVariable String id) {
+        return ResponseEntity.ok(service.getRechargeById(id));
     }
 
     @PostMapping
-    public Recharge addRecharge(@RequestBody Map<String, Object> payload) {
-        String memberId = (String) payload.get("memberId");
-        double amount = ((Number) payload.get("amount")).doubleValue();
-        return rechargeService.addRecharge(memberId, amount);
+    public ResponseEntity<RechargeResponseDTO> createRecharge(@RequestBody RechargeRequestDTO request) {
+        return ResponseEntity.ok(service.createRecharge(request));
     }
 }

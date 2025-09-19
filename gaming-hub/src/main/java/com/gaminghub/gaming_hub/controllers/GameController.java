@@ -1,8 +1,12 @@
 package com.gaminghub.gaming_hub.controllers;
 
-import com.gaminghub.gaming_hub.models.Game;
+import com.gaminghub.gaming_hub.dto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+
 import com.gaminghub.gaming_hub.services.GameService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,38 +16,31 @@ import java.util.List;
 @RequestMapping("/api/games")
 public class GameController {
 
-    @Autowired
-    private GameService gameService;
+    private final GameService service;
+    private static final Logger logger = LoggerFactory.getLogger(GameController.class);
+
+    public GameController(GameService service) {
+        this.service = service;
+    }
 
     @GetMapping
-    public List<Game> getAllGames() {
-        return gameService.getAllGames();
+    public ResponseEntity<List<GameResponseDTO>> getAllGames() {
+        return ResponseEntity.ok(service.getAllGames());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Game> getGameById(@PathVariable String id) {
-        return gameService.getGameById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<GameResponseDTO> getGameById(@PathVariable String id) {
+        return ResponseEntity.ok(service.getGameById(id));
     }
 
     @PostMapping
-    public Game createGame(@RequestBody Game game) {
-        return gameService.addGame(game);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Game> updateGame(@PathVariable String id, @RequestBody Game game) {
-        try {
-            return ResponseEntity.ok(gameService.updateGame(id, game));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<GameResponseDTO> createGame(@RequestBody GameRequestDTO request) {
+        return ResponseEntity.ok(service.createGame(request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGame(@PathVariable String id) {
-        gameService.deleteGame(id);
+        service.deleteGame(id);
         return ResponseEntity.noContent().build();
     }
 }

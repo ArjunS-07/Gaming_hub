@@ -1,11 +1,15 @@
 package com.gaminghub.gaming_hub.controllers;
 
-import com.gaminghub.gaming_hub.models.CollectionRecord;
+import com.gaminghub.gaming_hub.dto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+
 import com.gaminghub.gaming_hub.services.CollectionRecordService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -13,32 +17,25 @@ import java.util.List;
 public class CollectionRecordController {
 
     private final CollectionRecordService service;
+    private static final Logger logger = LoggerFactory.getLogger(CollectionRecordController.class);
 
     public CollectionRecordController(CollectionRecordService service) {
         this.service = service;
     }
 
     @GetMapping
-    public List<CollectionRecord> getAllCollections() {
-        return service.getAllCollections();
+    public ResponseEntity<List<CollectionRecordResponseDTO>> getAllCollections() {
+        return ResponseEntity.ok(service.getAllCollections());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CollectionRecord> getCollectionById(@PathVariable String id) {
+    public ResponseEntity<CollectionRecordResponseDTO> getCollectionById(@PathVariable String id) {
         return ResponseEntity.ok(service.getCollectionById(id));
     }
 
-    @GetMapping("/date/{date}")
-    public ResponseEntity<CollectionRecord> getCollectionByDate(@PathVariable String date) {
-        return ResponseEntity.ok(service.getCollectionByDate(LocalDate.parse(date)));
-    }
-
     @PostMapping
-    public ResponseEntity<CollectionRecord> createOrUpdateCollection(
-            @RequestParam String date,
-            @RequestParam Double amount) {
-        LocalDate localDate = LocalDate.parse(date);
-        return ResponseEntity.ok(service.createOrUpdateCollection(localDate, amount));
+    public ResponseEntity<CollectionRecordResponseDTO> createCollection(@RequestBody CollectionRecordRequestDTO request) {
+        return ResponseEntity.ok(service.createCollection(request));
     }
 
     @DeleteMapping("/{id}")

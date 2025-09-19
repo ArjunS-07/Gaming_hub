@@ -1,12 +1,13 @@
 package com.gaminghub.gaming_hub.services;
 
+import com.gaminghub.gaming_hub.dto.*;
+import com.gaminghub.gaming_hub.mapper.DtoMapper;
 import com.gaminghub.gaming_hub.models.CollectionRecord;
 import com.gaminghub.gaming_hub.repository.CollectionRecordRepository;
-import com.gaminghub.gaming_hub.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CollectionRecordService {
@@ -17,30 +18,25 @@ public class CollectionRecordService {
         this.repository = repository;
     }
 
-    public List<CollectionRecord> getAllCollections() {
-        return repository.findAll();
+    public List<CollectionRecordResponseDTO> getAllCollections() {
+        return repository.findAll()
+                .stream()
+                .map(DtoMapper::toCollectionRecordResponse)
+                .collect(Collectors.toList());
     }
 
-    public CollectionRecord getCollectionById(String id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Collection record not found with id: " + id));
+    public CollectionRecordResponseDTO getCollectionById(String id) {
+        CollectionRecord record = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Collection not found"));
+        return DtoMapper.toCollectionRecordResponse(record);
     }
 
-    public CollectionRecord getCollectionByDate(LocalDate date) {
-        return repository.findByDate(date)
-                .orElseThrow(() -> new ResourceNotFoundException("Collection record not found for date: " + date));
-    }
-
-    public CollectionRecord createOrUpdateCollection(LocalDate date, Double amount) {
-        CollectionRecord record = repository.findByDate(date).orElse(new CollectionRecord(date, 0.0));
-        record.setAmount(record.getAmount() + amount); // add to existing total
-        return repository.save(record);
+    public CollectionRecordResponseDTO createCollection(CollectionRecordRequestDTO request) {
+        CollectionRecord saved = repository.save(DtoMapper.toCollectionRecord(request));
+        return DtoMapper.toCollectionRecordResponse(saved);
     }
 
     public void deleteCollection(String id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Collection record not found with id: " + id);
-        }
         repository.deleteById(id);
     }
 }

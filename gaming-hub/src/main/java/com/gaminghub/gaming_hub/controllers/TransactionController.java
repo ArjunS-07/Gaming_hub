@@ -1,50 +1,39 @@
 package com.gaminghub.gaming_hub.controllers;
 
-import com.gaminghub.gaming_hub.models.Transaction;
+import com.gaminghub.gaming_hub.dto.*;
 import com.gaminghub.gaming_hub.services.TransactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
 
-    private final TransactionService transactionService;
+    private final TransactionService service;
+    private static final Logger logger = LoggerFactory.getLogger(TransactionController.class);
 
-    public TransactionController(TransactionService transactionService) {
-        this.transactionService = transactionService;
+    public TransactionController(TransactionService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public List<Transaction> getAllTransactions() {
-        return transactionService.getAllTransactions();
+    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactions() {
+        return ResponseEntity.ok(service.getAllTransactions());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Transaction> getTransactionById(@PathVariable String id) {
-        return ResponseEntity.ok(transactionService.getTransactionById(id));
+    public ResponseEntity<TransactionResponseDTO> getTransactionById(@PathVariable String id) {
+        return ResponseEntity.ok(service.getTransactionById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction) {
-        return ResponseEntity.ok(transactionService.createTransaction(transaction));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTransaction(@PathVariable String id) {
-        transactionService.deleteTransaction(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/member/{memberId}")
-    public List<Transaction> getTransactionsByMember(@PathVariable String memberId) {
-        return transactionService.getTransactionsByMember(memberId);
-    }
-
-    @GetMapping("/game/{gameId}")
-    public List<Transaction> getTransactionsByGame(@PathVariable String gameId) {
-        return transactionService.getTransactionsByGame(gameId);
+    public ResponseEntity<TransactionResponseDTO> createTransaction(@RequestBody TransactionRequestDTO request) {
+        return ResponseEntity.ok(service.createTransaction(request));
     }
 }

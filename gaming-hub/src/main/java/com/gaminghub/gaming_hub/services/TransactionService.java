@@ -1,48 +1,38 @@
 package com.gaminghub.gaming_hub.services;
 
+import com.gaminghub.gaming_hub.dto.*;
+import com.gaminghub.gaming_hub.mapper.DtoMapper;
 import com.gaminghub.gaming_hub.models.Transaction;
 import com.gaminghub.gaming_hub.repository.TransactionRepository;
-import com.gaminghub.gaming_hub.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionService {
 
-    private final TransactionRepository transactionRepository;
+    private final TransactionRepository repository;
 
-    public TransactionService(TransactionRepository transactionRepository) {
-        this.transactionRepository = transactionRepository;
+    public TransactionService(TransactionRepository repository) {
+        this.repository = repository;
     }
 
-    public List<Transaction> getAllTransactions() {
-        return transactionRepository.findAll();
+    public List<TransactionResponseDTO> getAllTransactions() {
+        return repository.findAll()
+                .stream()
+                .map(DtoMapper::toTransactionResponse)
+                .collect(Collectors.toList());
     }
 
-    public Transaction getTransactionById(String id) {
-        return transactionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id: " + id));
+    public TransactionResponseDTO getTransactionById(String id) {
+        Transaction transaction = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+        return DtoMapper.toTransactionResponse(transaction);
     }
 
-    public Transaction createTransaction(Transaction transaction) {
-        transaction.setDateTime(LocalDateTime.now());
-        return transactionRepository.save(transaction);
-    }
-
-    public void deleteTransaction(String id) {
-        if (!transactionRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Transaction not found with id: " + id);
-        }
-        transactionRepository.deleteById(id);
-    }
-
-    public List<Transaction> getTransactionsByMember(String memberId) {
-        return transactionRepository.findByMemberId(memberId);
-    }
-
-    public List<Transaction> getTransactionsByGame(String gameId) {
-        return transactionRepository.findByGameId(gameId);
+    public TransactionResponseDTO createTransaction(TransactionRequestDTO request) {
+        Transaction saved = repository.save(DtoMapper.toTransaction(request));
+        return DtoMapper.toTransactionResponse(saved);
     }
 }

@@ -1,6 +1,11 @@
 package com.gaminghub.gaming_hub.controllers;
 
-import com.gaminghub.gaming_hub.models.AdminUser;
+import com.gaminghub.gaming_hub.dto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+
 import com.gaminghub.gaming_hub.services.AdminUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,28 +17,29 @@ import java.util.List;
 public class AdminUserController {
 
     private final AdminUserService service;
+    private static final Logger logger = LoggerFactory.getLogger(AdminUserController.class);
 
     public AdminUserController(AdminUserService service) {
         this.service = service;
     }
 
     @GetMapping
-    public List<AdminUser> getAllAdmins() {
-        return service.getAllAdmins();
+    public ResponseEntity<List<AdminUserResponseDTO>> getAllAdmins() {
+        return ResponseEntity.ok(service.getAllAdmins());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AdminUser> getAdminById(@PathVariable String id) {
+    public ResponseEntity<AdminUserResponseDTO> getAdminById(@PathVariable String id) {
         return ResponseEntity.ok(service.getAdminById(id));
     }
 
     @PostMapping
-    public ResponseEntity<AdminUser> createAdmin(@RequestBody AdminUser adminUser) {
-        return ResponseEntity.ok(service.createAdmin(adminUser));
+    public ResponseEntity<AdminUserResponseDTO> createAdmin(@RequestBody AdminUserRequestDTO request) {
+        return ResponseEntity.ok(service.createAdmin(request));
     }
 
     @GetMapping("/username/{username}")
-    public ResponseEntity<AdminUser> getByUsername(@PathVariable String username) {
+    public ResponseEntity<AdminUserResponseDTO> getByUsername(@PathVariable String username) {
         return ResponseEntity.ok(service.getByUsername(username));
     }
 
